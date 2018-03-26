@@ -44,6 +44,16 @@
 // Includes from sli:
 #include "dictutils.h"
 
+#ifdef SCOREP_USER_ENABLE
+#include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_FUNC_BEGIN()
+#define SCOREP_USER_FUNC_END()
+#define SCOREP_USER_REGION_DEFINE()
+#define SCOREP_USER_REGION_BEGIN()
+#define SCOREP_USER_REGION_END()
+#endif
+
 namespace nest
 {
 EventDeliveryManager::EventDeliveryManager()
@@ -405,6 +415,8 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
     }
 #endif
 
+    SCOREP_USER_REGION_DEFINE(collocate_measurement);
+    SCOREP_USER_REGION_BEGIN(collocate_measurement, "collocate", SCOREP_USER_REGION_TYPE_COMMON);
     // need to get new positions in case buffer size has changed
     SendBufferPosition send_buffer_position(
       assigned_ranks, kernel().mpi_manager.get_send_recv_count_spike_data_per_rank() );
@@ -456,6 +468,7 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
 #ifndef DISABLE_COUNTS
       ++comm_rounds_spike_data;
 #endif
+      SCOREP_USER_REGION_END(collocate_measurement);
 #ifndef DISABLE_TIMING
       sw_collocate_spike_data.stop();
       kernel().mpi_manager.synchronize(); // to get an accurate time measurement across ranks
