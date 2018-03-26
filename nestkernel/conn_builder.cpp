@@ -1163,6 +1163,7 @@ nest::FixedInDegreeBuilder::FixedInDegreeBuilder( const GIDCollection& sources,
 void
 nest::FixedInDegreeBuilder::connect_()
 {
+SCOREP_USER_FUNC_BEGIN();
 #pragma omp parallel
   {
     // get thread id
@@ -1224,6 +1225,7 @@ nest::FixedInDegreeBuilder::connect_()
         lockPTR< WrappedThreadException >( new WrappedThreadException( err ) );
     }
   }
+SCOREP_USER_FUNC_END();
 }
 
 void
