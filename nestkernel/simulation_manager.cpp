@@ -42,6 +42,16 @@
 #include "dictutils.h"
 #include "psignal.h"
 
+#ifdef SCOREP_USER_ENABLE
+#include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_FUNC_BEGIN()
+#define SCOREP_USER_FUNC_END()
+#define SCOREP_USER_REGION_DEFINE()
+#define SCOREP_USER_REGION_BEGIN()
+#define SCOREP_USER_REGION_END()
+#endif
+
 nest::SimulationManager::SimulationManager()
   : clock_( Time::tic( 0L ) )
   , slice_( 0L )
@@ -979,6 +989,8 @@ nest::SimulationManager::update_()
         sw_update.start();
       }
 #endif
+      SCOREP_USER_REGION_DEFINE(node_update);
+      SCOREP_USER_REGION_BEGIN(node_update, "node_update", SCOREP_USER_REGION_TYPE_COMMON);
       const std::vector< Node* >& thread_local_nodes =
         kernel().node_manager.get_nodes_on_thread( tid );
       for (
@@ -1003,6 +1015,7 @@ nest::SimulationManager::update_()
         }
       }
 
+      SCOREP_USER_REGION_END(node_update);
 // parallel section ends, wait until all threads are done -> synchronize
 #pragma omp barrier
 #ifndef DISABLE_TIMING
