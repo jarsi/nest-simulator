@@ -32,6 +32,7 @@
 int
 main( int argc, char* argv[] )
 {
+SCOREP_USER_FUNC_BEGIN();
   /**
    * Create the interpreter object. Due to its dependence
    * on various static objects (e.g. of class Name), the
@@ -45,6 +46,7 @@ main( int argc, char* argv[] )
   int exitcode = engine.execute();
 
   nestshutdown( exitcode );
+SCOREP_USER_FUNC_END();
 
   return exitcode;
 }
