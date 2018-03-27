@@ -799,6 +799,7 @@ nest::SimulationManager::wfr_update_( Node* n )
 void
 nest::SimulationManager::update_()
 {
+  SCOREP_USER_FUNC_BEGIN()
   // to store done values of the different threads
   std::vector< bool > done;
   bool done_all = true;
@@ -989,8 +990,6 @@ nest::SimulationManager::update_()
         sw_update.start();
       }
 #endif
-      SCOREP_USER_REGION_DEFINE(node_update);
-      SCOREP_USER_REGION_BEGIN(node_update, "node_update", SCOREP_USER_REGION_TYPE_COMMON);
       const std::vector< Node* >& thread_local_nodes =
         kernel().node_manager.get_nodes_on_thread( tid );
       for (
@@ -1015,7 +1014,6 @@ nest::SimulationManager::update_()
         }
       }
 
-      SCOREP_USER_REGION_END(node_update);
 // parallel section ends, wait until all threads are done -> synchronize
 #pragma omp barrier
 #ifndef DISABLE_TIMING
@@ -1124,6 +1122,7 @@ nest::SimulationManager::update_()
       throw WrappedThreadException( *( exceptions_raised.at( tid ) ) );
     }
   }
+  SCOREP_USER_FUNC_END()
 }
 
 void

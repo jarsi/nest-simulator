@@ -40,6 +40,16 @@
 #include "doubledatum.h"
 #include "integerdatum.h"
 
+#ifdef SCOREP_USER_ENABLE
+#include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_FUNC_BEGIN()
+#define SCOREP_USER_FUNC_END()
+#define SCOREP_USER_REGION_DEFINE()
+#define SCOREP_USER_REGION_BEGIN()
+#define SCOREP_USER_REGION_END()
+#endif
+
 nest::RecordablesMap< nest::iaf_psc_alpha >
   nest::iaf_psc_alpha::recordablesMap_;
 
@@ -318,6 +328,7 @@ iaf_psc_alpha::calibrate()
 void
 iaf_psc_alpha::update( Time const& origin, const long from, const long to )
 {
+  SCOREP_USER_FUNC_BEGIN()
   assert(
     to >= 0 && ( delay ) from < kernel().connection_manager.get_min_delay() );
   assert( from < to );
@@ -379,6 +390,7 @@ iaf_psc_alpha::update( Time const& origin, const long from, const long to )
     // log state data
     B_.logger_.record_data( origin.get_steps() + lag );
   }
+SCOREP_USER_FUNC_END()
 }
 
 void

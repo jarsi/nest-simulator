@@ -48,6 +48,16 @@
 #include "fdstream.h"
 #include "name.h"
 
+#ifdef SCOREP_USER_ENABLE
+#include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_FUNC_BEGIN()
+#define SCOREP_USER_FUNC_END()
+#define SCOREP_USER_REGION_DEFINE()
+#define SCOREP_USER_REGION_BEGIN()
+#define SCOREP_USER_REGION_END()
+#endif
+
 nest::ConnBuilder::ConnBuilder( const GIDCollection& sources,
   const GIDCollection& targets,
   const DictionaryDatum& conn_spec,
@@ -1163,7 +1173,7 @@ nest::FixedInDegreeBuilder::FixedInDegreeBuilder( const GIDCollection& sources,
 void
 nest::FixedInDegreeBuilder::connect_()
 {
-SCOREP_USER_FUNC_BEGIN();
+SCOREP_USER_FUNC_BEGIN()
 #pragma omp parallel
   {
     // get thread id
@@ -1225,7 +1235,7 @@ SCOREP_USER_FUNC_BEGIN();
         lockPTR< WrappedThreadException >( new WrappedThreadException( err ) );
     }
   }
-SCOREP_USER_FUNC_END();
+SCOREP_USER_FUNC_END()
 }
 
 void

@@ -62,6 +62,16 @@
 // Includes from nestkernel:
 #include "connection.h"
 
+#ifdef SCOREP_USER_ENABLE
+#include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_FUNC_BEGIN()
+#define SCOREP_USER_FUNC_END()
+#define SCOREP_USER_REGION_DEFINE()
+#define SCOREP_USER_REGION_BEGIN()
+#define SCOREP_USER_REGION_END()
+#endif
+
 namespace nest
 {
 
@@ -230,6 +240,7 @@ STDPPLConnectionHom< targetidentifierT >::send( Event& e,
   thread t,
   const STDPPLHomCommonProperties& cp )
 {
+  SCOREP_USER_FUNC_BEGIN()
   // synapse STDP depressing/facilitation dynamics
 
   const double t_spike = e.get_stamp().get_ms();
@@ -276,6 +287,7 @@ STDPPLConnectionHom< targetidentifierT >::send( Event& e,
     Kplus_ * std::exp( ( t_lastspike_ - t_spike ) * cp.tau_plus_inv_ ) + 1.0;
 
   t_lastspike_ = t_spike;
+  SCOREP_USER_FUNC_END()
 }
 
 template < typename targetidentifierT >

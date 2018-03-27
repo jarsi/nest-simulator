@@ -95,13 +95,13 @@ add_library( sli_readline gnureadline.cc gnureadline.h )
 target_link_libraries( sli_readline sli_lib nestutil ${READLINE_LIBRARIES} )
 
 # add the executable
-add_executable( sli puresli.cc )
-target_link_libraries( sli sli_lib sli_readline ${GSL_LIBRARIES} )
+# add_executable( sli puresli.cc )
+# target_link_libraries( sli sli_lib sli_readline ${GSL_LIBRARIES} )
 
-target_include_directories( sli PRIVATE
-    ${PROJECT_SOURCE_DIR}/libnestutil
-    ${PROJECT_BINARY_DIR}/libnestutil
-    )
+# target_include_directories( sli PRIVATE
+#     ${PROJECT_SOURCE_DIR}/libnestutil
+#     ${PROJECT_BINARY_DIR}/libnestutil
+#     )
 
 target_include_directories( sli_lib PRIVATE
     ${PROJECT_SOURCE_DIR}/libnestutil
@@ -117,7 +117,7 @@ target_include_directories( sli_readline PRIVATE
     ${PROJECT_BINARY_DIR}/libnestutil
     )
 
-install( TARGETS sli_readline sli_lib sli
+install( TARGETS sli_readline sli_lib #sli
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

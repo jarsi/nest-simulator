@@ -32,6 +32,16 @@
 #include "dictutils.h"
 #include "doubledatum.h"
 
+#ifdef SCOREP_USER_ENABLE
+#include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_FUNC_BEGIN()
+#define SCOREP_USER_FUNC_END()
+#define SCOREP_USER_REGION_DEFINE()
+#define SCOREP_USER_REGION_BEGIN()
+#define SCOREP_USER_REGION_END()
+#endif
+
 /* ----------------------------------------------------------------
  * Default constructors defining default parameter
  * ---------------------------------------------------------------- */
@@ -120,6 +130,7 @@ nest::poisson_generator::calibrate()
 void
 nest::poisson_generator::update( Time const& T, const long from, const long to )
 {
+  SCOREP_USER_FUNC_BEGIN()
   assert(
     to >= 0 && ( delay ) from < kernel().connection_manager.get_min_delay() );
   assert( from < to );
@@ -139,6 +150,7 @@ nest::poisson_generator::update( Time const& T, const long from, const long to )
     DSSpikeEvent se;
     kernel().event_delivery_manager.send( *this, se, lag );
   }
+  SCOREP_USER_FUNC_END()
 }
 
 void

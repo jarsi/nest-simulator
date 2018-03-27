@@ -415,8 +415,6 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
     }
 #endif
 
-    SCOREP_USER_REGION_DEFINE(collocate_measurement);
-    SCOREP_USER_REGION_BEGIN(collocate_measurement, "collocate", SCOREP_USER_REGION_TYPE_COMMON);
     // need to get new positions in case buffer size has changed
     SendBufferPosition send_buffer_position(
       assigned_ranks, kernel().mpi_manager.get_send_recv_count_spike_data_per_rank() );
@@ -468,7 +466,6 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
 #ifndef DISABLE_COUNTS
       ++comm_rounds_spike_data;
 #endif
-      SCOREP_USER_REGION_END(collocate_measurement);
 #ifndef DISABLE_TIMING
       sw_collocate_spike_data.stop();
       kernel().mpi_manager.synchronize(); // to get an accurate time measurement across ranks
@@ -535,6 +532,7 @@ EventDeliveryManager::collocate_spike_data_buffers_( const thread tid,
     spike_register,
   std::vector< SpikeDataT >& send_buffer )
 {
+  SCOREP_USER_FUNC_BEGIN()
   // reset complete marker
   // TODO@5g: reset_complete_marker_( assigned_ranks, send_buffer_position, send_buffer ); -> Susi
   for ( thread rank = assigned_ranks.begin; rank < assigned_ranks.end; ++rank )
@@ -572,6 +570,7 @@ EventDeliveryManager::collocate_spike_data_buffers_( const thread tid,
           is_spike_register_empty = false;
           if ( send_buffer_position.are_all_chunks_filled() )
           {
+            SCOREP_USER_FUNC_END()
             return is_spike_register_empty;
           }
           else
@@ -594,6 +593,7 @@ EventDeliveryManager::collocate_spike_data_buffers_( const thread tid,
     }
   }
 
+  SCOREP_USER_FUNC_END()
   return is_spike_register_empty;
 }
 
@@ -655,6 +655,7 @@ bool
 EventDeliveryManager::deliver_events_5g_( const thread tid,
   const std::vector< SpikeDataT >& recv_buffer )
 {
+  SCOREP_USER_FUNC_BEGIN()
 #ifndef DISABLE_COUNTS
   ++call_count_deliver_events_5g[ tid ];
 #endif
@@ -718,6 +719,7 @@ EventDeliveryManager::deliver_events_5g_( const thread tid,
     }
   }
 
+  SCOREP_USER_FUNC_END()
   return are_others_completed;
 }
 
@@ -848,6 +850,7 @@ EventDeliveryManager::collocate_target_data_buffers_(
   const AssignedRanks& assigned_ranks,
   SendBufferPosition& send_buffer_position )
 {
+  SCOREP_USER_FUNC_BEGIN()
   unsigned int num_target_data_written = 0;
   thread source_rank;
   TargetData next_target_data;
@@ -858,6 +861,7 @@ EventDeliveryManager::collocate_target_data_buffers_(
   if ( assigned_ranks.begin == assigned_ranks.end )
   {
     kernel().connection_manager.no_targets_to_process( tid );
+    SCOREP_USER_FUNC_END()
     return is_source_table_read;
   }
 
@@ -898,6 +902,7 @@ EventDeliveryManager::collocate_target_data_buffers_(
           == ( send_buffer_position.send_recv_count_per_rank
                * assigned_ranks.size ) ) // buffer is full
         {
+          SCOREP_USER_FUNC_END()
           return is_source_table_read;
         }
         else
@@ -927,9 +932,11 @@ EventDeliveryManager::collocate_target_data_buffers_(
           send_buffer_target_data_[ send_buffer_position.begin( rank ) ].set_invalid_marker();
         }
       }
+      SCOREP_USER_FUNC_END()
       return is_source_table_read;
     } // of else
   }   // of while(true)
+  SCOREP_USER_FUNC_END()
 }
 
 void
@@ -950,6 +957,7 @@ nest::EventDeliveryManager::set_complete_marker_target_data_( const thread tid,
 bool
 nest::EventDeliveryManager::distribute_target_data_buffers_( const thread tid )
 {
+  SCOREP_USER_FUNC_BEGIN()
   bool are_others_completed = true;
   const unsigned int send_recv_count_target_data_per_rank = kernel().mpi_manager.get_send_recv_count_target_data_per_rank();
 
@@ -986,6 +994,7 @@ nest::EventDeliveryManager::distribute_target_data_buffers_( const thread tid )
     }
   }
 
+  SCOREP_USER_FUNC_END()
   return are_others_completed;
 }
 

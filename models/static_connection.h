@@ -45,6 +45,16 @@
 // Includes from nestkernel:
 #include "connection.h"
 
+#ifdef SCOREP_USER_ENABLE
+#include "scorep/SCOREP_User.h"
+#else
+#define SCOREP_USER_FUNC_BEGIN()
+#define SCOREP_USER_FUNC_END()
+#define SCOREP_USER_REGION_DEFINE()
+#define SCOREP_USER_REGION_BEGIN()
+#define SCOREP_USER_REGION_END()
+#endif
+
 namespace nest
 {
 
@@ -156,11 +166,13 @@ public:
   void
   send( Event& e, const thread tid, const CommonSynapseProperties& )
   {
+    SCOREP_USER_FUNC_BEGIN()
     e.set_weight( weight_ );
     e.set_delay( get_delay_steps() );
     e.set_receiver( *get_target( tid ) );
     e.set_rport( get_rport() );
     e();
+    SCOREP_USER_FUNC_END()
   }
 
   void get_status( DictionaryDatum& d ) const;
