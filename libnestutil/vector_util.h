@@ -36,8 +36,8 @@ grow( std::vector< T >& v )
   // https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md)
   if ( v.size() == v.capacity() )
   {
-    double kb_to_gb = 1073741824.;
-    double v_memory = sizeof(std::vector< T >) / kb_to_gb + sizeof( T ) * ( v.size() / kb_to_gb ); // Gigabytes
+    double b_to_gb = 1073741824.;
+    double v_memory = sizeof(std::vector< T >) / b_to_gb + sizeof( T ) * ( v.size() / b_to_gb ); // Gigabytes
     if ( v_memory < 1. ) {
       v.reserve( ( v.size() * 3 + 1 ) / 2 );
     }

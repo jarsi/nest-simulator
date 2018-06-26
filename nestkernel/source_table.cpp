@@ -209,8 +209,9 @@ nest::SourceTable::reserve( const thread tid,
   const synindex syn_id,
   const size_t count )
 {
-  ( *sources_[ tid ] )[ syn_id ]->reserve(
-    ( *sources_[ tid ] )[ syn_id ]->size() + count );
+  // ( *sources_[ tid ] )[ syn_id ]->reserve(
+  //   ( *sources_[ tid ] )[ syn_id ]->size() + count );
+    vector_util::grow( *( *sources_[ tid ] )[ syn_id ] );
 }
 
 nest::index

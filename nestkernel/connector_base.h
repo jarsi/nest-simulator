@@ -449,7 +449,8 @@ public:
   void
   reserve( const size_t count )
   {
-    C_.reserve( count );
+    // C_.reserve( count );
+    vector_util::grow( C_ );
   }
 
   void
