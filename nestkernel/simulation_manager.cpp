@@ -487,6 +487,13 @@ nest::SimulationManager::run( Time const& t )
 {
   assert_valid_simtime( t );
 
+#ifdef TIMER
+  if ( kernel().mpi_manager.get_rank() < 30 )
+  {
+    sw_simulate.start();
+  }
+#endif
+
   to_do_ += t.get_steps();
   to_do_total_ = to_do_;
 
@@ -537,6 +544,13 @@ nest::SimulationManager::run( Time const& t )
   call_update_();
 
   kernel().node_manager.post_run_cleanup();
+#ifdef TIMER
+  if ( kernel().mpi_manager.get_rank() < 30 )
+  {
+    sw_simulate.stop();
+    sw_simulate.print( "0] Simulate time: " );
+  }
+#endif
 }
 
 void
@@ -891,7 +905,17 @@ nest::SimulationManager::update_()
         Time( Time::step( clock_.get_steps() + to_step_ ) ).get_ms() );
     }
 
-  } // end of #pragma parallel omp
+#ifdef TIMER
+    if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+    {
+      kernel().event_delivery_manager.sw_communicate_spike_data.print(
+        "0] GatherSpikeData::communicate time: " );
+      kernel().event_delivery_manager.sw_deliver_spike_data.print(
+        "0] GatherSpikeData::deliver time: " );
+    }
+#endif
+
+  } // of omp parallel
 
   // check if any exceptions have been raised
   for ( index thrd = 0; thrd < kernel().vp_manager.get_num_threads(); ++thrd )

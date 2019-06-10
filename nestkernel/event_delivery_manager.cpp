@@ -668,6 +668,11 @@ EventDeliveryManager::gather_events( bool done )
   time_collocate_ += stw_local.elapsed();
   stw_local.reset();
   stw_local.start();
+#ifdef TIMER
+        kernel().mpi_manager.synchronize(); // to get an accurate time measurement
+                                            // across ranks
+        sw_communicate_spike_data.start();
+#endif
   if ( off_grid_spiking_ )
   {
     kernel().mpi_manager.communicate(
@@ -678,6 +683,10 @@ EventDeliveryManager::gather_events( bool done )
     kernel().mpi_manager.communicate(
       local_grid_spikes_, global_grid_spikes_, displacements_ );
   }
+#ifdef TIMER
+      sw_communicate_spike_data.stop();
+      sw_deliver_spike_data.start();
+#endif
   stw_local.stop();
   time_communicate_ += stw_local.elapsed();
 }

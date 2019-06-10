@@ -220,6 +220,9 @@ public:
    */
   virtual void reset_timers_counters();
 
+  Stopwatch sw_communicate_spike_data;
+  Stopwatch sw_deliver_spike_data;
+
 private:
   /**
    * Rearrange the spike_register into a 2-dim structure. This is
