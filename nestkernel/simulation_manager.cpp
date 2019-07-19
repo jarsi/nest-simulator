@@ -669,6 +669,13 @@ nest::SimulationManager::update_()
   {
     const int thrd = kernel().vp_manager.get_thread_id();
 
+#ifdef TIMER
+    if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+    {
+      sw_total.start();
+    }
+#endif
+
     do
     {
       if ( print_time_ )
@@ -825,6 +832,13 @@ nest::SimulationManager::update_()
       } // of if(wfr_is_used)
       // end of preliminary update
 
+#ifdef TIMER
+      if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+      {
+        sw_update.start();
+      }
+#endif
+
       const std::vector< Node* >& thread_local_nodes =
         kernel().node_manager.get_nodes_on_thread( thrd );
       for (
@@ -854,7 +868,15 @@ nest::SimulationManager::update_()
 
 // the following block is executed by the master thread only
 // the other threads are enforced to wait at the end of the block
+#ifdef TIMER
+      if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+      {
+        sw_update.stop();
+      }
+#endif
 #pragma omp master
+
+      // gather and deliver only at end of slice, i.e., end of min_delay step
       {
         // check if any thread in parallel section raised an exception
         for ( index thrd = 0; thrd < kernel().vp_manager.get_num_threads();
@@ -908,10 +930,15 @@ nest::SimulationManager::update_()
 #ifdef TIMER
     if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
     {
+      sw_total.stop();
+      sw_update.print( "0] Update time: " );
+      kernel().event_delivery_manager.sw_collocate_spike_data.print(
+        "0] GatherSpikeData::collocate time: " );
       kernel().event_delivery_manager.sw_communicate_spike_data.print(
         "0] GatherSpikeData::communicate time: " );
       kernel().event_delivery_manager.sw_deliver_spike_data.print(
         "0] GatherSpikeData::deliver time: " );
+      sw_total.print( "0] Total time: " );
     }
 #endif
 

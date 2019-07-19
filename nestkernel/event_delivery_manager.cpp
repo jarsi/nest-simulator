@@ -663,7 +663,19 @@ EventDeliveryManager::gather_events( bool done )
 
   stw_local.reset();
   stw_local.start();
+#ifdef TIMER
+    if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+    {
+      sw_collocate_spike_data.start();
+    }
+#endif
   collocate_buffers_( done );
+#ifdef TIMER
+        sw_collocate_spike_data.stop();
+        kernel().mpi_manager.synchronize(); // to get an accurate time measurement
+                                            // across ranks
+        sw_communicate_spike_data.start();
+#endif
   stw_local.stop();
   time_collocate_ += stw_local.elapsed();
   stw_local.reset();
