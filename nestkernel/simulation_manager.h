@@ -189,6 +189,7 @@ private:
   size_t wfr_interpolation_order_; //!< interpolation order for waveform
                                    //!< relaxation method
 
+  Stopwatch sw_deliver_spike_data;
   Stopwatch sw_simulate;
   Stopwatch sw_total;
   Stopwatch sw_update;

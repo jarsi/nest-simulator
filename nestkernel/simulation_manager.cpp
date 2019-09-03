@@ -670,7 +670,7 @@ nest::SimulationManager::update_()
     const int thrd = kernel().vp_manager.get_thread_id();
 
 #ifdef TIMER
-    if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+    if ( thrd == 0 and kernel().mpi_manager.get_rank() < 30 )
     {
       sw_total.start();
     }
@@ -714,7 +714,13 @@ nest::SimulationManager::update_()
 
       if ( from_step_ == 0 ) // deliver only at beginning of slice
       {
+#ifdef TIMER
+        sw_deliver_spike_data.start();
+#endif
         kernel().event_delivery_manager.deliver_events( thrd );
+#ifdef TIMER
+        sw_deliver_spike_data.stop();
+#endif
 #ifdef HAVE_MUSIC
 // advance the time of music by one step (min_delay * h) must
 // be done after deliver_events_() since it calls
@@ -833,7 +839,7 @@ nest::SimulationManager::update_()
       // end of preliminary update
 
 #ifdef TIMER
-      if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+      if ( thrd == 0 and kernel().mpi_manager.get_rank() < 30 )
       {
         sw_update.start();
       }
@@ -869,7 +875,7 @@ nest::SimulationManager::update_()
 // the following block is executed by the master thread only
 // the other threads are enforced to wait at the end of the block
 #ifdef TIMER
-      if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+      if ( thrd == 0 and kernel().mpi_manager.get_rank() < 30 )
       {
         sw_update.stop();
       }
@@ -928,7 +934,7 @@ nest::SimulationManager::update_()
     }
 
 #ifdef TIMER
-    if ( tid == 0 and kernel().mpi_manager.get_rank() < 30 )
+    if ( thrd == 0 and kernel().mpi_manager.get_rank() < 30 )
     {
       sw_total.stop();
       sw_update.print( "0] Update time: " );
@@ -936,7 +942,7 @@ nest::SimulationManager::update_()
         "0] GatherSpikeData::collocate time: " );
       kernel().event_delivery_manager.sw_communicate_spike_data.print(
         "0] GatherSpikeData::communicate time: " );
-      kernel().event_delivery_manager.sw_deliver_spike_data.print(
+      sw_deliver_spike_data.print(
         "0] GatherSpikeData::deliver time: " );
       sw_total.print( "0] Total time: " );
     }
