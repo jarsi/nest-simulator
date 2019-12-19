@@ -715,11 +715,17 @@ nest::SimulationManager::update_()
       if ( from_step_ == 0 ) // deliver only at beginning of slice
       {
 #ifdef TIMER
+#pragma omp single
+      {
         sw_deliver_spike_data.start();
+      }
 #endif
         kernel().event_delivery_manager.deliver_events( thrd );
 #ifdef TIMER
+#pragma omp single
+      {
         sw_deliver_spike_data.stop();
+      }
 #endif
 #ifdef HAVE_MUSIC
 // advance the time of music by one step (min_delay * h) must
