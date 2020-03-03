@@ -250,6 +250,7 @@ public:
    * needs to be increased. Returns whether the size was changed.
    */
   bool increase_buffer_size_spike_data();
+  bool increase_buffer_size_spike_data( const size_t buffer_size );
 
   /**
    * Returns whether MPI buffers for communication of connections are adaptive.
@@ -280,6 +281,9 @@ private:
   // communication of connections
 
   size_t max_buffer_size_spike_data_; //!< maximal size of MPI buffer for
+  // communication of spikes
+
+  size_t max_vector_size_spike_data_; //!< maximal size of vector for
   // communication of spikes
 
   bool adaptive_target_buffers_; //!< whether MPI buffers for communication of
@@ -544,6 +548,41 @@ MPIManager::increase_buffer_size_spike_data()
     {
       set_buffer_size_spike_data( max_buffer_size_spike_data_ );
     }
+    return true;
+  }
+}
+
+inline bool
+MPIManager::increase_buffer_size_spike_data( const size_t buffer_size )
+{
+  assert( adaptive_spike_buffers_ );
+  if ( buffer_size_spike_data_ >= max_buffer_size_spike_data_ )
+  {
+    return false;
+  }
+  else
+  {
+    // Set buffer size for correct number of elements.
+    // Avoid resize of vector by returning false.
+    if ( buffer_size <= max_vector_size_spike_data_ )
+    {
+      set_buffer_size_spike_data( buffer_size );
+      return false;
+    }
+
+    // buffer_size > max_vector_size_spike_data.
+    // Allow resize to minimise number of communication passes.
+    if ( buffer_size < max_buffer_size_spike_data_ )
+    {
+      max_vector_size_spike_data_ = buffer_size;
+      set_buffer_size_spike_data( buffer_size );
+    }
+    else
+    {
+      max_vector_size_spike_data_ = max_buffer_size_spike_data_;
+      set_buffer_size_spike_data( max_buffer_size_spike_data_ );
+    }
+
     return true;
   }
 }

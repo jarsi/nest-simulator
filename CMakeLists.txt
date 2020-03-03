@@ -79,6 +79,12 @@ set( disable-counts ON CACHE BOOL "Disable measurements of call counts. [default
 
 set( target-bits-split "standard" CACHE STRING "Split of the 64-bit target neuron identifier type. 'standard' is recommended for most users. If running on more than 262144 MPI processes or more than 512 threads, change to 'hpc'. [default standard]" )
 
+option( use-good-count "Inform the size of spike buffers." [default=ON] )
+
+if( use-good-count )
+  add_definitions( -DUSE_GOOD_COUNT )
+endif()
+
 ################################################################################
 ##################      Project Directory variables           ##################
 ################################################################################

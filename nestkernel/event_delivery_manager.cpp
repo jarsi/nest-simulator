@@ -61,6 +61,7 @@ EventDeliveryManager::EventDeliveryManager()
   , recv_buffer_spike_data_()
   , send_buffer_off_grid_spike_data_()
   , recv_buffer_off_grid_spike_data_()
+  , send_buffer_spike_data_counts_()
   , send_buffer_target_data_()
   , recv_buffer_target_data_()
   , buffer_size_target_data_has_changed_( false )
@@ -88,6 +89,8 @@ EventDeliveryManager::initialize()
   off_grid_spiking_ = false;
   buffer_size_target_data_has_changed_ = false;
   buffer_size_spike_data_has_changed_ = false;
+
+  send_buffer_spike_data_counts_.resize( kernel().mpi_manager.get_num_processes() );
 
 #pragma omp parallel
   {
@@ -346,7 +349,7 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
 #pragma omp barrier
     // Set markers to signal end of valid spikes, and remove spikes
     // from register that have been collected in send buffer.
-    set_end_and_invalid_markers_( assigned_ranks, send_buffer_position, send_buffer );
+    set_end_and_invalid_markers_( assigned_ranks, send_buffer_position, send_buffer, send_buffer_spike_data_counts_ );
     clean_spike_register_( tid );
 
     // If we do not have any spikes left, set corresponding marker in
@@ -379,6 +382,21 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
 // done.
 #pragma omp barrier
     // Resize mpi buffers, if necessary and allowed.
+#ifdef USE_GOOD_COUNT
+    // Find the maximum number of spikes to be sent across all processes.
+    if ( kernel().mpi_manager.adaptive_spike_buffers() )
+    {
+#pragma omp single
+      {
+        std::vector< long > max_spike_count(
+            1, *std::max_element( send_buffer_spike_data_counts_.begin(), send_buffer_spike_data_counts_.end() ) );
+        kernel().mpi_manager.communicate_Allreduce_max_in_place( max_spike_count );
+
+        buffer_size_spike_data_has_changed_ = kernel().mpi_manager.increase_buffer_size_spike_data(
+            max_spike_count[ 0 ] * kernel().mpi_manager.get_num_processes() );
+      }
+    }
+#else
     if ( gather_completed_checker_.any_false() and kernel().mpi_manager.adaptive_spike_buffers() )
     {
 #pragma omp single
@@ -387,7 +405,7 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
       }
     }
 #pragma omp barrier
-
+#endif
   } // of while
 
   reset_spike_register_( tid );
@@ -457,7 +475,8 @@ template < typename SpikeDataT >
 void
 EventDeliveryManager::set_end_and_invalid_markers_( const AssignedRanks& assigned_ranks,
   const SendBufferPosition& send_buffer_position,
-  std::vector< SpikeDataT >& send_buffer )
+  std::vector< SpikeDataT >& send_buffer,
+  std::vector< unsigned int >& send_counts )
 {
   for ( thread rank = assigned_ranks.begin; rank < assigned_ranks.end; ++rank )
   {
@@ -474,11 +493,13 @@ EventDeliveryManager::set_end_and_invalid_markers_( const AssignedRanks& assigne
       // the next chunk is read, i.e., the next element in the buffer.
       assert( send_buffer_position.idx( rank ) - 1 < send_buffer_position.end( rank ) );
       send_buffer[ send_buffer_position.idx( rank ) - 1 ].set_end_marker();
+      send_counts[ rank ] = 2 + send_buffer_position.count( rank );
     }
     else
     {
       assert( send_buffer_position.idx( rank ) == send_buffer_position.begin( rank ) );
       send_buffer[ send_buffer_position.begin( rank ) ].set_invalid_marker();
+      send_counts[ rank ] = 2;
     }
   }
 }
