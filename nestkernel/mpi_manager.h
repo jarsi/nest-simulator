@@ -490,10 +490,10 @@ MPIManager::set_buffer_size_spike_data( const size_t buffer_size )
 
   send_recv_count_spike_data_per_rank_ = floor( get_buffer_size_spike_data() / get_num_processes() );
 
-  if ( get_rank() == 0 )
-  {
-    printf( "buffer_size_spike_data: [%d, %d, %lu]\n", get_rank(), send_recv_count_spike_data_per_rank_, get_buffer_size_spike_data() );
-  }
+  //if ( get_rank() == 0 )
+  //{
+  //  printf( "buffer_size_spike_data: [%d, %d, %lu]\n", get_rank(), send_recv_count_spike_data_per_rank_, get_buffer_size_spike_data() );
+  //}
 
   assert( send_recv_count_spike_data_per_rank_ * get_num_processes() <= get_buffer_size_spike_data() );
 }
@@ -594,10 +594,10 @@ MPIManager::increase_buffer_size_spike_data( const size_t buffer_size )
       max_vector_size_spike_data_ = max_buffer_size_spike_data_;
       set_buffer_size_spike_data( max_buffer_size_spike_data_ );
     }
-    if ( get_rank() == 0 )
-    {
-      printf( "expansion\n" );
-    }
+    //if ( get_rank() == 0 )
+    //{
+    //  printf( "expansion\n" );
+    //}
     return true;
   }
 }
