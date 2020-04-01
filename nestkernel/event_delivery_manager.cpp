@@ -408,7 +408,7 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
 
     // Resize mpi buffers, if necessary and allowed.
     // Find the maximum number of spikes to be sent across all processes.
-    if ( kernel().mpi_manager.adaptive_spike_buffers() )
+    if ( kernel().mpi_manager.adaptive_spike_buffers() )//and kernel().simulation_manager.get_clock().get_steps() % 100 == 0 )
     {
 #pragma omp single
       {
@@ -421,7 +421,18 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
       }
     }
 #pragma omp barrier
+
   } // of while
+
+//  if ( not buffer_size_spike_data_has_changed_ and kernel().mpi_manager.adaptive_spike_buffers() )
+//  {
+//#pragma omp single
+//    {
+//      buffer_size_spike_data_has_changed_ = kernel().mpi_manager.decrease_buffer_size_spike_data();
+//      assert( !buffer_size_spike_data_has_changed_ );
+//    }
+//  }
+//#pragma omp barrier
 
   reset_spike_register_( tid );
 }
