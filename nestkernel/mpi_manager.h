@@ -586,8 +586,8 @@ MPIManager::increase_buffer_size_spike_data( const size_t buffer_size )
     // Allow resize to minimise number of communication passes.
     if ( buffer_size < max_buffer_size_spike_data_ )
     {
-      max_vector_size_spike_data_ = buffer_size;
-      set_buffer_size_spike_data( buffer_size );
+      max_vector_size_spike_data_ = buffer_size_spike_data_ * growth_factor_buffer_spike_data_;
+      set_buffer_size_spike_data( max_vector_size_spike_data_ );
     }
     else
     {
