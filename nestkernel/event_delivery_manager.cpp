@@ -382,7 +382,8 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
       }
       else
       {
-        kernel().mpi_manager.communicate_spike_data_Alltoall( send_buffer, recv_buffer );
+      //kernel().mpi_manager.communicate_spike_data_Alltoall( send_buffer, recv_buffer );
+        kernel().mpi_manager.communicate_spike_data_Alltoall( send_buffer, recv_buffer, send_buffer_spike_data_counts_ );
       }
 #ifdef TIMER
       sw_communicate_spike_data.stop();
@@ -412,15 +413,14 @@ EventDeliveryManager::gather_spike_data_( const thread tid,
     {
 #pragma omp single
       {
-        std::vector< long > max_spike_count(
-            1, *std::max_element( send_buffer_spike_data_counts_.begin(), send_buffer_spike_data_counts_.end() ) );
-        kernel().mpi_manager.communicate_Allreduce_max_in_place( max_spike_count );
-
         buffer_size_spike_data_has_changed_ = kernel().mpi_manager.increase_buffer_size_spike_data(
-            max_spike_count[ 0 ] * kernel().mpi_manager.get_num_processes() );
+            kernel().mpi_manager.get_max_spike_count() * kernel().mpi_manager.get_num_processes() );
       }
     }
+    else
+    {
 #pragma omp barrier
+    }
 
   } // of while
 

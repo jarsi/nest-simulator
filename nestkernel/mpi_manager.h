@@ -195,6 +195,11 @@ public:
    */
   size_t get_buffer_size_secondary_events_in_int() const;
 
+  /**
+   * Returns maximum number of spikes to be sent by any MPI process.
+   */
+  long get_max_spike_count() const;
+
 #ifdef HAVE_MPI
   void communicate_Alltoall_( void* send_buffer, void* recv_buffer, const unsigned int send_recv_count );
 
@@ -209,6 +214,8 @@ public:
   void communicate_target_data_Alltoall( std::vector< D >& send_buffer, std::vector< D >& recv_buffer );
   template < class D >
   void communicate_spike_data_Alltoall( std::vector< D >& send_buffer, std::vector< D >& recv_buffer );
+  template < class D >
+  void communicate_spike_data_Alltoall( std::vector< D >& send_buffer, std::vector< D >& recv_buffer, std::vector< unsigned int >& send_recv_count_spike_data );
   template < class D >
   void communicate_off_grid_spike_data_Alltoall( std::vector< D >& send_buffer, std::vector< D >& recv_buffer );
   template < class D >
@@ -307,7 +314,10 @@ private:
   unsigned int send_recv_count_target_data_per_rank_;
 
 #ifdef HAVE_MPI
-  //! array containing communication partner for each step.
+  //! Maximum number of spikes to be sent by any MPI process.
+  std::vector< long > max_spike_count_;
+
+  //! Array containing communication partner for each step.
   std::vector< int > comm_step_;
   unsigned int COMM_OVERFLOW_ERROR;
 
@@ -455,6 +465,12 @@ inline size_t
 MPIManager::get_buffer_size_secondary_events_in_int() const
 {
   return chunk_size_secondary_events_in_int_ * get_num_processes();
+}
+
+inline long
+MPIManager::get_max_spike_count() const
+{
+  return max_spike_count_[ 0 ];
 }
 
 inline void
@@ -771,6 +787,21 @@ template < class D >
 void
 MPIManager::communicate_spike_data_Alltoall( std::vector< D >& send_buffer, std::vector< D >& recv_buffer )
 {
+  const size_t send_recv_count_spike_data_in_int_per_rank =
+    sizeof( SpikeData ) / sizeof( unsigned int ) * send_recv_count_spike_data_per_rank_;
+
+  communicate_Alltoall( send_buffer, recv_buffer, send_recv_count_spike_data_in_int_per_rank );
+}
+
+template < class D >
+void
+MPIManager::communicate_spike_data_Alltoall( std::vector< D >& send_buffer, std::vector< D >& recv_buffer, std::vector< unsigned int >& send_recv_count_spike_data )
+{
+  max_spike_count_[ 0 ] = *std::max_element(
+      send_recv_count_spike_data.begin(),
+      send_recv_count_spike_data.end() );
+  communicate_Allreduce_max_in_place( max_spike_count_ );
+
   const size_t send_recv_count_spike_data_in_int_per_rank =
     sizeof( SpikeData ) / sizeof( unsigned int ) * send_recv_count_spike_data_per_rank_;
 

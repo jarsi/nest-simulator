@@ -72,6 +72,7 @@ nest::MPIManager::MPIManager()
   , send_recv_count_spike_data_per_rank_( 0 )
   , send_recv_count_target_data_per_rank_( 0 )
 #ifdef HAVE_MPI
+  , max_spike_count_( std::vector< long >( 1, 0 ) )
   , comm_step_( std::vector< int >() )
   , COMM_OVERFLOW_ERROR( std::numeric_limits< unsigned int >::max() )
   , comm( 0 )
