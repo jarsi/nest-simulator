@@ -600,21 +600,16 @@ MPIManager::increase_buffer_size_spike_data( const size_t buffer_size )
     }
     // buffer_size > max_vector_size_spike_data.
     // Allow resize to minimise number of communication passes.
-    if ( buffer_size < max_buffer_size_spike_data_ )
+    else
     {
       max_vector_size_spike_data_ = buffer_size_spike_data_ * growth_factor_buffer_spike_data_;
       set_buffer_size_spike_data( max_vector_size_spike_data_ );
+      //if ( get_rank() == 0 )
+      //{
+      //  printf( "expansion\n" );
+      //}
+      return true;
     }
-    else
-    {
-      max_vector_size_spike_data_ = max_buffer_size_spike_data_;
-      set_buffer_size_spike_data( max_buffer_size_spike_data_ );
-    }
-    //if ( get_rank() == 0 )
-    //{
-    //  printf( "expansion\n" );
-    //}
-    return true;
   }
 }
 
