@@ -677,8 +677,6 @@ EventDeliveryManager::gather_events( bool done )
   stw_local.start();
 #ifdef TIMER
         sw_collocate_spike_data.stop();
-        kernel().mpi_manager.synchronize(); // to get an accurate time measurement
-                                            // across ranks
         sw_communicate_spike_data.start();
 #endif
   if ( off_grid_spiking_ )
