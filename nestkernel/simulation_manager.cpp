@@ -715,14 +715,14 @@ nest::SimulationManager::update_()
       if ( from_step_ == 0 ) // deliver only at beginning of slice
       {
 #ifdef TIMER
-#pragma omp single
+    if ( thrd == 0 and kernel().mpi_manager.get_rank() < 30 )
       {
         sw_deliver_spike_data.start();
       }
 #endif
         kernel().event_delivery_manager.deliver_events( thrd );
 #ifdef TIMER
-#pragma omp single
+    if ( thrd == 0 and kernel().mpi_manager.get_rank() < 30 )
       {
         sw_deliver_spike_data.stop();
       }
